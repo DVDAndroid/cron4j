@@ -90,28 +90,16 @@ class TimerThread extends Thread {
 	 * Overrides {@link Thread#run()}.
 	 */
 	public void run() {
-		// What time is it?
-		long millis = System.currentTimeMillis();
-		// Calculating next minute.
-		long nextMinute = ((millis / 60000) + 1) * 60000;
 		// Work until the scheduler is started.
 		for (;;) {
-			// Coffee break 'till next minute comes!
-			long sleepTime = (nextMinute - System.currentTimeMillis());
-			if (sleepTime > 0) {
-				try {
-					safeSleep(sleepTime);
-				} catch (InterruptedException e) {
-					// Must exit!
-					break;
-				}
+			try {
+				safeSleep(1_000);
+			} catch (InterruptedException e) {
+				// Must exit!
+				break;
 			}
-			// What time is it?
-			millis = System.currentTimeMillis();
 			// Launching the launching thread!
-			scheduler.spawnLauncher(millis);
-			// Calculating next minute.
-			nextMinute = ((millis / 60000) + 1) * 60000;
+			scheduler.spawnLauncher(System.currentTimeMillis());
 		}
 		// Discard scheduler reference.
 		scheduler = null;

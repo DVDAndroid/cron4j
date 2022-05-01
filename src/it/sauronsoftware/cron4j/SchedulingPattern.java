@@ -31,6 +31,8 @@ import java.util.TimeZone;
  * Each part is intented as:
  * </p>
  * <ol>
+ * <li><strong>Seconds sub-pattern</strong>. During which seconds of the hour
+ * should the task been launched? The values range is from 0 to 59.</li>
  * <li><strong>Minutes sub-pattern</strong>. During which minutes of the hour
  * should the task been launched? The values range is from 0 to 59.</li>
  * <li><strong>Hours sub-pattern</strong>. During which hours of the day should
@@ -44,6 +46,8 @@ import java.util.TimeZone;
  * &quot;feb&quot;, &quot;mar&quot;, &quot;apr&quot;, &quot;may&quot;,
  * &quot;jun&quot;, &quot;jul&quot;, &quot;aug&quot;, &quot;sep&quot;,
  * &quot;oct&quot;, &quot;nov&quot; and &quot;dec&quot;.</li>
+ * <li><strong>Year</strong>. During which year
+ * should the task been launched? The values range is from 0 to {@link Integer#MAX_VALUE}.</li>
  * <li><strong>Days of week sub-pattern</strong>. During which days of the week
  * should the task been launched? The values range is from 0 (Sunday) to 6
  * (Saturday), otherwise this sub-pattern allows the aliases &quot;sun&quot;,
@@ -64,21 +68,21 @@ import java.util.TimeZone;
  * Some examples:
  * </p>
  * <p>
- * <strong>5 * * * *</strong><br />
+ * <strong>* 5 * * * * *</strong><br>
  * This pattern causes a task to be launched once every hour, at the begin of
  * the fifth minute (00:05, 01:05, 02:05 etc.).
  * </p>
  * <p>
- * <strong>* * * * *</strong><br />
+ * <strong>* * * * * * *</strong><br>
  * This pattern causes a task to be launched every minute.
  * </p>
  * <p>
- * <strong>* 12 * * Mon</strong><br />
+ * <strong>* * 12 * * * Mon</strong><br>
  * This pattern causes a task to be launched every minute during the 12th hour
  * of Monday.
  * </p>
  * <p>
- * <strong>* 12 16 * Mon</strong><br />
+ * <strong>* * 12 16 * * Mon</strong><br>
  * This pattern causes a task to be launched every minute during the 12th hour
  * of Monday, 16th, but only if the day is the 16th of the month.
  * </p>
@@ -86,7 +90,7 @@ import java.util.TimeZone;
  * Every sub-pattern can contain two or more comma separated values.
  * </p>
  * <p>
- * <strong>59 11 * * 1,2,3,4,5</strong><br />
+ * <strong>* 59 11 * * * 1,2,3,4,5</strong><br>
  * This pattern causes a task to be launched at 11:59AM on Monday, Tuesday,
  * Wednesday, Thursday and Friday.
  * </p>
@@ -94,7 +98,7 @@ import java.util.TimeZone;
  * Values intervals are admitted and defined using the minus character.
  * </p>
  * <p>
- * <strong>59 11 * * 1-5</strong><br />
+ * <strong>* 59 11 * * * 1-5</strong><br>
  * This pattern is equivalent to the previous one.
  * </p>
  * <p>
@@ -104,18 +108,18 @@ import java.util.TimeZone;
  * <em>0,maxvalue</em> or <em>a-b</em>.
  * </p>
  * <p>
- * <strong>*&#47;5 * * * *</strong><br />
+ * <strong>* *&#47;5 * * * * *</strong><br>
  * This pattern causes a task to be launched every 5 minutes (0:00, 0:05, 0:10,
  * 0:15 and so on).
  * </p>
  * <p>
- * <strong>3-18&#47;5 * * * *</strong><br />
+ * <strong>* 3-18&#47;5 * * * * *</strong><br>
  * This pattern causes a task to be launched every 5 minutes starting from the
  * third minute of the hour, up to the 18th (0:03, 0:08, 0:13, 0:18, 1:03, 1:08
  * and so on).
  * </p>
  * <p>
- * <strong>*&#47;15 9-17 * * *</strong><br />
+ * <strong>* *&#47;15 9-17 * * * *</strong><br>
  * This pattern causes a task to be launched every 15 minutes between the 9th
  * and 17th hour of the day (9:00, 9:15, 9:30, 9:45 and so on... note that the
  * last execution will be at 17:45).
@@ -124,13 +128,13 @@ import java.util.TimeZone;
  * All the fresh described syntax rules can be used together.
  * </p>
  * <p>
- * <strong>* 12 10-16&#47;2 * *</strong><br />
+ * <strong>* * 12 10-16&#47;2 * * *</strong><br>
  * This pattern causes a task to be launched every minute during the 12th hour
  * of the day, but only if the day is the 10th, the 12th, the 14th or the 16th
  * of the month.
  * </p>
  * <p>
- * <strong>* 12 1-15,17,20-25 * *</strong><br />
+ * <strong>* * 12 1-15,17,20-25 * * *</strong><br>
  * This pattern causes a task to be launched every minute during the 12th hour
  * of the day, but the day of the month must be between the 1st and the 15th,
  * the 20th and the 25, or at least it must be the 17th.
@@ -140,7 +144,7 @@ import java.util.TimeZone;
  * pipe character:
  * </p>
  * <p>
- * <strong>0 5 * * *|8 10 * * *|22 17 * * *</strong><br />
+ * <strong>* 0 5 * * *|* 8 10 * * *|* 22 17 * * *</strong><br>
  * This pattern causes a task to be launched every day at 05:00, 10:08 and
  * 17:22.
  * </p>
@@ -149,6 +153,11 @@ import java.util.TimeZone;
  * @since 2.0
  */
 public class SchedulingPattern {
+
+	/**
+	 * The parser for the second values.
+	 */
+	private static final ValueParser SECOND_VALUE_PARSER = new SecondValueParser();
 
 	/**
 	 * The parser for the minute values.
@@ -169,6 +178,11 @@ public class SchedulingPattern {
 	 * The parser for the month values.
 	 */
 	private static final ValueParser MONTH_VALUE_PARSER = new MonthValueParser();
+
+	/**
+	 * The parser for the year values.
+	 */
+	private static final ValueParser YEAR_VALUE_PARSER = new YearValueParser();
 
 	/**
 	 * The parser for the day of week values.
@@ -198,6 +212,11 @@ public class SchedulingPattern {
 	private String asString;
 
 	/**
+	 * The ValueMatcher list for the "second" field.
+	 */
+	protected ArrayList secondMatchers = new ArrayList();
+
+	/**
 	 * The ValueMatcher list for the "minute" field.
 	 */
 	protected ArrayList minuteMatchers = new ArrayList();
@@ -216,6 +235,11 @@ public class SchedulingPattern {
 	 * The ValueMatcher list for the "month" field.
 	 */
 	protected ArrayList monthMatchers = new ArrayList();
+
+	/**
+	 * The ValueMatcher list for the "year" field.
+	 */
+	protected ArrayList yearMatchers = new ArrayList();
 
 	/**
 	 * The ValueMatcher list for the "day of week" field.
@@ -244,8 +268,15 @@ public class SchedulingPattern {
 		while (st1.hasMoreTokens()) {
 			String localPattern = st1.nextToken();
 			StringTokenizer st2 = new StringTokenizer(localPattern, " \t");
-			if (st2.countTokens() != 5) {
+			if (st2.countTokens() != 7) {
 				throw new InvalidPatternException("invalid pattern: \"" + localPattern + "\"");
+			}
+			try {
+				secondMatchers.add(buildValueMatcher(st2.nextToken(), SECOND_VALUE_PARSER));
+			} catch (Exception e) {
+				throw new InvalidPatternException("invalid pattern \""
+						+ localPattern + "\". Error parsing secodns field: "
+						+ e.getMessage() + ".");
 			}
 			try {
 				minuteMatchers.add(buildValueMatcher(st2.nextToken(), MINUTE_VALUE_PARSER));
@@ -274,6 +305,13 @@ public class SchedulingPattern {
 			} catch (Exception e) {
 				throw new InvalidPatternException("invalid pattern \""
 						+ localPattern + "\". Error parsing months field: "
+						+ e.getMessage() + ".");
+			}
+			try {
+				yearMatchers.add(buildValueMatcher(st2.nextToken(), YEAR_VALUE_PARSER));
+			} catch (Exception e) {
+				throw new InvalidPatternException("invalid pattern \""
+						+ localPattern + "\". Error parsing year field: "
 						+ e.getMessage() + ".");
 			}
 			try {
@@ -462,6 +500,7 @@ public class SchedulingPattern {
 		GregorianCalendar gc = new GregorianCalendar();
 		gc.setTimeInMillis(millis);
 		gc.setTimeZone(timezone);
+		int second = gc.get(Calendar.SECOND);
 		int minute = gc.get(Calendar.MINUTE);
 		int hour = gc.get(Calendar.HOUR_OF_DAY);
 		int dayOfMonth = gc.get(Calendar.DAY_OF_MONTH);
@@ -469,17 +508,21 @@ public class SchedulingPattern {
 		int dayOfWeek = gc.get(Calendar.DAY_OF_WEEK) - 1;
 		int year = gc.get(Calendar.YEAR);
 		for (int i = 0; i < matcherSize; i++) {
+			ValueMatcher secondMatcher = (ValueMatcher) secondMatchers.get(i);
 			ValueMatcher minuteMatcher = (ValueMatcher) minuteMatchers.get(i);
 			ValueMatcher hourMatcher = (ValueMatcher) hourMatchers.get(i);
 			ValueMatcher dayOfMonthMatcher = (ValueMatcher) dayOfMonthMatchers.get(i);
 			ValueMatcher monthMatcher = (ValueMatcher) monthMatchers.get(i);
+            ValueMatcher yearMatcher = (ValueMatcher) yearMatchers.get(i);
 			ValueMatcher dayOfWeekMatcher = (ValueMatcher) dayOfWeekMatchers.get(i);
-			boolean eval = minuteMatcher.match(minute)
+			boolean eval = secondMatcher.match(second)
+			        && minuteMatcher.match(minute)
 					&& hourMatcher.match(hour)
 					&& ((dayOfMonthMatcher instanceof DayOfMonthValueMatcher) ? ((DayOfMonthValueMatcher) dayOfMonthMatcher)
 							.match(dayOfMonth, month, gc.isLeapYear(year))
 							: dayOfMonthMatcher.match(dayOfMonth))
 					&& monthMatcher.match(month)
+					&& yearMatcher.match(year)
 					&& dayOfWeekMatcher.match(dayOfWeek);
 			if (eval) {
 				return true;
@@ -617,6 +660,20 @@ public class SchedulingPattern {
 	}
 
 	/**
+	 * The second value parser.
+	 */
+	private static class SecondValueParser extends SimpleValueParser {
+
+		/**
+		 * Builds the value parser.
+		 */
+		public SecondValueParser() {
+			super(0, 59);
+		}
+
+	}
+
+	/**
 	 * The minutes value parser.
 	 */
 	private static class MinuteValueParser extends SimpleValueParser {
@@ -701,6 +758,20 @@ public class SchedulingPattern {
 				// try as an alias
 				return parseAlias(value, ALIASES, 1);
 			}
+		}
+
+	}
+
+	/**
+	 * The year value parser.
+	 */
+	private static class YearValueParser extends SimpleValueParser {
+
+		/**
+		 * Builds the value parser.
+		 */
+		public YearValueParser() {
+			super(0, Integer.MAX_VALUE);
 		}
 
 	}
