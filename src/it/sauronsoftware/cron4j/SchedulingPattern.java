@@ -47,7 +47,7 @@ import java.util.TimeZone;
  * &quot;jun&quot;, &quot;jul&quot;, &quot;aug&quot;, &quot;sep&quot;,
  * &quot;oct&quot;, &quot;nov&quot; and &quot;dec&quot;.</li>
  * <li><strong>Year</strong>. During which year
- * should the task been launched? The values range is from 0 to {@link Integer#MAX_VALUE}.</li>
+ * should the task been launched? The values range is from 0 to 2999.</li>
  * <li><strong>Days of week sub-pattern</strong>. During which days of the week
  * should the task been launched? The values range is from 0 (Sunday) to 6
  * (Saturday), otherwise this sub-pattern allows the aliases &quot;sun&quot;,
@@ -68,21 +68,21 @@ import java.util.TimeZone;
  * Some examples:
  * </p>
  * <p>
- * <strong>* 5 * * * * *</strong><br>
+ * <strong>0 5 * * * * *</strong><br>
  * This pattern causes a task to be launched once every hour, at the begin of
  * the fifth minute (00:05, 01:05, 02:05 etc.).
  * </p>
  * <p>
- * <strong>* * * * * * *</strong><br>
+ * <strong>0 * * * * * *</strong><br>
  * This pattern causes a task to be launched every minute.
  * </p>
  * <p>
- * <strong>* * 12 * * * Mon</strong><br>
+ * <strong>0 * 12 * * * Mon</strong><br>
  * This pattern causes a task to be launched every minute during the 12th hour
  * of Monday.
  * </p>
  * <p>
- * <strong>* * 12 16 * * Mon</strong><br>
+ * <strong>0 * 12 16 * * Mon</strong><br>
  * This pattern causes a task to be launched every minute during the 12th hour
  * of Monday, 16th, but only if the day is the 16th of the month.
  * </p>
@@ -90,7 +90,7 @@ import java.util.TimeZone;
  * Every sub-pattern can contain two or more comma separated values.
  * </p>
  * <p>
- * <strong>* 59 11 * * * 1,2,3,4,5</strong><br>
+ * <strong>0 59 11 * * * 1,2,3,4,5</strong><br>
  * This pattern causes a task to be launched at 11:59AM on Monday, Tuesday,
  * Wednesday, Thursday and Friday.
  * </p>
@@ -98,7 +98,7 @@ import java.util.TimeZone;
  * Values intervals are admitted and defined using the minus character.
  * </p>
  * <p>
- * <strong>* 59 11 * * * 1-5</strong><br>
+ * <strong>0 59 11 * * * 1-5</strong><br>
  * This pattern is equivalent to the previous one.
  * </p>
  * <p>
@@ -108,18 +108,18 @@ import java.util.TimeZone;
  * <em>0,maxvalue</em> or <em>a-b</em>.
  * </p>
  * <p>
- * <strong>* *&#47;5 * * * * *</strong><br>
+ * <strong>0 *&#47;5 * * * * *</strong><br>
  * This pattern causes a task to be launched every 5 minutes (0:00, 0:05, 0:10,
  * 0:15 and so on).
  * </p>
  * <p>
- * <strong>* 3-18&#47;5 * * * * *</strong><br>
+ * <strong>0 3-18&#47;5 * * * * *</strong><br>
  * This pattern causes a task to be launched every 5 minutes starting from the
  * third minute of the hour, up to the 18th (0:03, 0:08, 0:13, 0:18, 1:03, 1:08
  * and so on).
  * </p>
  * <p>
- * <strong>* *&#47;15 9-17 * * * *</strong><br>
+ * <strong>0 *&#47;15 9-17 * * * *</strong><br>
  * This pattern causes a task to be launched every 15 minutes between the 9th
  * and 17th hour of the day (9:00, 9:15, 9:30, 9:45 and so on... note that the
  * last execution will be at 17:45).
@@ -128,13 +128,13 @@ import java.util.TimeZone;
  * All the fresh described syntax rules can be used together.
  * </p>
  * <p>
- * <strong>* * 12 10-16&#47;2 * * *</strong><br>
+ * <strong>0 * 12 10-16&#47;2 * * *</strong><br>
  * This pattern causes a task to be launched every minute during the 12th hour
  * of the day, but only if the day is the 10th, the 12th, the 14th or the 16th
  * of the month.
  * </p>
  * <p>
- * <strong>* * 12 1-15,17,20-25 * * *</strong><br>
+ * <strong>0 * 12 1-15,17,20-25 * * *</strong><br>
  * This pattern causes a task to be launched every minute during the 12th hour
  * of the day, but the day of the month must be between the 1st and the 15th,
  * the 20th and the 25, or at least it must be the 17th.
@@ -144,7 +144,7 @@ import java.util.TimeZone;
  * pipe character:
  * </p>
  * <p>
- * <strong>* 0 5 * * *|* 8 10 * * *|* 22 17 * * *</strong><br>
+ * <strong>0 0 5 * * *|0 8 10 * * *|0 22 17 * * *</strong><br>
  * This pattern causes a task to be launched every day at 05:00, 10:08 and
  * 17:22.
  * </p>
@@ -771,7 +771,7 @@ public class SchedulingPattern {
 		 * Builds the value parser.
 		 */
 		public YearValueParser() {
-			super(0, Integer.MAX_VALUE);
+			super(0, 2999);
 		}
 
 	}

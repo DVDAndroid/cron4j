@@ -14,16 +14,6 @@
 	With cron4j you can launch, from within your Java applications, any task you need at the right time,
 	according to some simple rules.
     </description>
-    <distributionManagement>
-        <repository>
-            <id>sauronsoftware-github</id>
-            <url>https://raw.github.com/Takuto88/sauronsoftware-maven/master/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>sauronsoftware-github-snapshots</id>
-            <url>https://raw.github.com/Takuto88/sauronsoftware-maven/master/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
     <build>
         <sourceDirectory>src</sourceDirectory>
         <scriptSourceDirectory>src</scriptSourceDirectory>
